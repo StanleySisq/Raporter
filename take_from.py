@@ -1,5 +1,5 @@
 import requests
-import settings
+import settings, db_funcs
 
 def init_session():
 
@@ -61,6 +61,8 @@ def get_ticket_details(session_token, ticket_id):
         return ticket_details
     else:
         print(f"Error extracting tickets details: {response.status_code}")
+        db_funcs.add_ticket_id(ticket_id)
+        print(f"Ticked id: {ticket_id} added to forgotten list")
         #print(response.text)
         return None
     
