@@ -156,6 +156,7 @@ def get_report_data(session_token, report):
     }    
     
     def inside():
+        nonlocal time_sum_helpdesk, time_sum_admini, all_tickets_to_process
         try:
             prepared_ticket = get_prepered_ticket(session_token, ticket_id)
         except Exception as e:
@@ -185,7 +186,7 @@ def get_report_data(session_token, report):
 
     task_queue = queue.Queue()
 
-    num_threads = 3
+    num_threads = 10
     threads = []
     for _ in range(num_threads):
         thread = threading.Thread(target=worker, args=(task_queue,))
