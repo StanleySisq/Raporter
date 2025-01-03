@@ -28,7 +28,7 @@ def header(session_token):
     return headers
 
 def newest_ticket(session_token):
-    ranga=f'0-100000'
+    ranga=f'0-100'
     
     params = {
         'range': ranga, 
