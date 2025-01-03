@@ -154,40 +154,39 @@ def get_report_data(session_token, report):
         "": copy.deepcopy(data_set),
         "": copy.deepcopy(data_set)
     }    
-    
-    def inside():
+    lock = threading.Lock()
+    def inside(ticket_id):
         nonlocal time_sum_helpdesk, time_sum_admini, all_tickets_to_process
         try:
             prepared_ticket = get_prepered_ticket(session_token, ticket_id)
         except Exception as e:
             return
-            
+
         if prepared_ticket == "Skip":
             return
-            
-        if prepared_ticket.get('uprawnienie') == "Helpdesk":
-            previous_time_sum = time_sum_helpdesk.get(prepared_ticket.get('firma'), 0)
-            time_sum_helpdesk[prepared_ticket.get('firma')] = prepared_ticket.get('time_spend', 0) + previous_time_sum
-            all_tickets_to_process.append(ticket_id)
 
-        else:
-            previous_time_sum = time_sum_admini.get(prepared_ticket.get('firma'), 0)
-            time_sum_admini[prepared_ticket.get('firma')] = prepared_ticket.get('time_spend', 0) + previous_time_sum
-            all_tickets_to_process.append(ticket_id)
+        with lock:
+            if prepared_ticket.get('uprawnienie') == "Helpdesk":
+                previous_time_sum = time_sum_helpdesk.get(prepared_ticket.get('firma'), 0)
+                time_sum_helpdesk[prepared_ticket.get('firma')] = prepared_ticket.get('time_spend', 0) + previous_time_sum
+                all_tickets_to_process.append(ticket_id)
+            else:
+                previous_time_sum = time_sum_admini.get(prepared_ticket.get('firma'), 0)
+                time_sum_admini[prepared_ticket.get('firma')] = prepared_ticket.get('time_spend', 0) + previous_time_sum
+                all_tickets_to_process.append(ticket_id)
 
-    def worker(task_queu):
+    def worker(task_queue):
         while True:
-            ticket_id = task_queu.get()  
+            ticket_id = task_queue.get()
             if ticket_id is None:
-                break  
-            inside()
-            task_queu.task_done()
-
+                break
+            inside(ticket_id)
+            task_queue.task_done()
 
     task_queue = queue.Queue()
-
     num_threads = 10
     threads = []
+
     for _ in range(num_threads):
         thread = threading.Thread(target=worker, args=(task_queue,))
         thread.start()
@@ -199,11 +198,10 @@ def get_report_data(session_token, report):
     task_queue.join()
 
     for _ in threads:
-        task_queue.put(None) 
-    
+        task_queue.put(None)
+
     for thread in threads:
         thread.join()
-        
 
     if not report:
         return time_sum_helpdesk, time_sum_admini
