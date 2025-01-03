@@ -6,11 +6,11 @@ app = Flask(__name__)
 
 @app.route('/small_raport', methods=['POST'])
 def small_raport():
-    send_full_data()
+    send_small_data()
 
 @app.route('/full_raport', methods=['POST'])
 def full_raport():
-    send_small_data()
+    send_full_data()
 
 if __name__ == "__main__":
 

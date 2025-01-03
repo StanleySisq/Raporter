@@ -1,5 +1,6 @@
 import copy
 import math
+import threading
 from time import sleep
 import requests
 from datetime import datetime, timedelta
@@ -151,16 +152,15 @@ def get_report_data(session_token, report):
         "": copy.deepcopy(data_set),
         "": copy.deepcopy(data_set),
         "": copy.deepcopy(data_set)
-    }    
-    
-    for ticket_id in range(newest_ticket_id):
+    }
+    def tic():
         try:
             prepared_ticket = get_prepered_ticket(session_token, ticket_id)
         except Exception as e:
-            continue
+            return None
             
         if prepared_ticket == "Skip":
-            continue
+            return None
             
         if prepared_ticket.get('uprawnienie') == "Helpdesk":
             previous_time_sum = time_sum_helpdesk.get(prepared_ticket.get('firma'), 0)
@@ -171,6 +171,18 @@ def get_report_data(session_token, report):
             previous_time_sum = time_sum_admini.get(prepared_ticket.get('firma'), 0)
             time_sum_admini[prepared_ticket.get('firma')] = prepared_ticket.get('time_spend', 0) + previous_time_sum
             all_tickets_to_process.append(ticket_id)
+
+    threads = []
+
+    for ticket_id in range(newest_ticket_id):
+        treter = threading.Thread(target=tic)
+        treter.daemon = True
+        treter.start()
+        threads.append(treter)
+        sleep(0.2)
+
+    for treter in threads:
+        treter.join()
 
     if not report:
         return time_sum_helpdesk, time_sum_admini
@@ -562,7 +574,7 @@ def send_full_data():
         print(payload)
         
         response = requests.post(settings.upload_link, json=payload, headers=headers)
-        response.raise_for_status()  
+        #response.raise_for_status()  
         print("Raport sent")
         sleep(5)
 
@@ -587,6 +599,6 @@ def send_small_data():
         print(payload)
         
         response = requests.post(settings.little_upload_link, json=payload, headers=headers)
-        response.raise_for_status()  
+        #response.raise_for_status()  
         print("mini Raport sent")
         sleep(2)
