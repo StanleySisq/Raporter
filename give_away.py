@@ -2,6 +2,7 @@ import copy
 import math
 import threading
 from time import sleep
+import concurrent
 import requests
 from datetime import datetime, timedelta
 from take_from import get_assigned_users_from_ticket, get_customs, get_ticket_details, get_user_details, newest_ticket, init_session
@@ -172,17 +173,17 @@ def get_report_data(session_token, report):
             time_sum_admini[prepared_ticket.get('firma')] = prepared_ticket.get('time_spend', 0) + previous_time_sum
             all_tickets_to_process.append(ticket_id)
 
-    threads = []
+    max_workers = 5
 
-    for ticket_id in range(newest_ticket_id):
-        treter = threading.Thread(target=tic)
-        treter.daemon = True
-        treter.start()
-        threads.append(treter)
-        sleep(0.2)
-
-    for treter in threads:
-        treter.join()
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = []
+        for ticket_id in range(newest_ticket_id):
+            future = executor.submit(tic, ticket_id)
+            futures.append(future)
+            #sleep(0.1)  
+        
+        for future in concurrent.futures.as_completed(futures):
+            future.result()
 
     if not report:
         return time_sum_helpdesk, time_sum_admini
