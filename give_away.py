@@ -1,5 +1,7 @@
 import copy
 import math
+import queue
+import threading
 from time import sleep
 import requests
 from datetime import datetime, timedelta
@@ -153,14 +155,14 @@ def get_report_data(session_token, report):
         "": copy.deepcopy(data_set)
     }    
     
-    for ticket_id in range(newest_ticket_id):
+    def inside():
         try:
             prepared_ticket = get_prepered_ticket(session_token, ticket_id)
         except Exception as e:
-            continue
+            return
             
         if prepared_ticket == "Skip":
-            continue
+            return
             
         if prepared_ticket.get('uprawnienie') == "Helpdesk":
             previous_time_sum = time_sum_helpdesk.get(prepared_ticket.get('firma'), 0)
@@ -171,6 +173,36 @@ def get_report_data(session_token, report):
             previous_time_sum = time_sum_admini.get(prepared_ticket.get('firma'), 0)
             time_sum_admini[prepared_ticket.get('firma')] = prepared_ticket.get('time_spend', 0) + previous_time_sum
             all_tickets_to_process.append(ticket_id)
+
+    def worker(task_queu):
+        while True:
+            ticket_id = task_queu.get()  
+            if ticket_id is None:
+                break  
+            inside()
+            task_queu.task_done()
+
+
+    task_queue = queue.Queue()
+
+    num_threads = 3
+    threads = []
+    for _ in range(num_threads):
+        thread = threading.Thread(target=worker, args=(task_queue,))
+        thread.start()
+        threads.append(thread)
+
+    for ticket_id in range(newest_ticket_id):
+        task_queue.put(ticket_id)
+
+    task_queue.join()
+
+    for _ in threads:
+        task_queue.put(None) 
+    
+    for thread in threads:
+        thread.join()
+        
 
     if not report:
         return time_sum_helpdesk, time_sum_admini
