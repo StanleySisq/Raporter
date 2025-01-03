@@ -10,8 +10,6 @@ import settings
 
 def get_prepered_ticket(session_token, ticket_id):
 
-    user_id, technic_id = get_assigned_users_from_ticket(session_token, ticket_id)
-
     ticket_details = get_ticket_details(session_token, ticket_id)
     
     if ticket_details == None or ticket_details.get('actiontime') == 0:
@@ -29,8 +27,6 @@ def get_prepered_ticket(session_token, ticket_id):
     last_day_of_previous_month = now.replace(day=1) - timedelta(days=1)
     previous_month_25th = last_day_of_previous_month.replace(day=settings.first_day)
 
-    last_day_of_2_months_ago = last_day_of_previous_month.replace(day=1) - timedelta(days=1)
-
     if solvedate_str:
         solvedate = datetime.strptime(solvedate_str, "%Y-%m-%d %H:%M:%S")
     else:
@@ -38,11 +34,14 @@ def get_prepered_ticket(session_token, ticket_id):
 
     if solvedate and previous_month_25th <= solvedate < current_month_25th:
         print(f"Ticket id: {ticket_id}, Solve Date: {solvedate}")
-    elif solvedate <= last_day_of_2_months_ago:
+    elif solvedate and solvedate < previous_month_25th:
         print(f"Ticket id: {ticket_id}, Solve Date: {solvedate} Added to forgotten list")
         db_funcs.add_ticket_id(ticket_id)
+        return "Skip"
     else:
         return "Skip"
+    
+    user_id, technic_id = get_assigned_users_from_ticket(session_token, ticket_id)
 
     user_details = get_user_details(session_token, user_id)
 
