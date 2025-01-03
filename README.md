@@ -1,2 +1,2 @@
 # Raporter
-Custom raport form GLPI with custom fields
+Custom raport from GLPI with custom fields
