@@ -28,7 +28,7 @@ def header(session_token):
     return headers
 
 def newest_ticket(session_token):
-    ranga=f'0-100'
+    ranga='0-100'
     
     params = {
         'range': ranga, 
@@ -38,19 +38,19 @@ def newest_ticket(session_token):
     
     response = requests.get(f"{settings.glpi_url}/search/Ticket", headers=header(session_token), params=params)
     
-    if response.status_code == 200:
-        tickets = response.json()
-        if 'data' in tickets and tickets['data']:
-            latest_ticket = tickets['data'][0]  # Download newest ticket
-            latest_ticket_id = latest_ticket.get('2')  # Download ID ticket (pole '2')
-            return latest_ticket_id
-        else:
-            print("No avaible tickets.")
-            return None
+    #if response.status_code == 200:
+    tickets = response.json()
+    if 'data' in tickets and tickets['data']:
+        latest_ticket = tickets['data'][0]  # Download newest ticket
+        latest_ticket_id = latest_ticket.get('2')  # Download ID ticket (pole '2')
+        return latest_ticket_id
     else:
-        print(f"Error searching tickets : {response.status_code}")
-        #print(response.text)
+        print("No avaible tickets.")
         return None
+    #else:
+        #print(f"Error searching tickets : {response.status_code}")
+        #print(response.text)
+        #return None
 
 def get_ticket_details(session_token, ticket_id):
     
