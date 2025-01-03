@@ -1,4 +1,4 @@
-import copy
+import copy, db_funcs
 import math
 import queue
 import threading
@@ -29,6 +29,8 @@ def get_prepered_ticket(session_token, ticket_id):
     last_day_of_previous_month = now.replace(day=1) - timedelta(days=1)
     previous_month_25th = last_day_of_previous_month.replace(day=settings.first_day)
 
+    last_day_of_2_months_ago = last_day_of_previous_month.replace(day=1) - timedelta(days=1)
+
     if solvedate_str:
         solvedate = datetime.strptime(solvedate_str, "%Y-%m-%d %H:%M:%S")
     else:
@@ -36,6 +38,9 @@ def get_prepered_ticket(session_token, ticket_id):
 
     if solvedate and previous_month_25th <= solvedate < current_month_25th:
         print(f"Ticket id: {ticket_id}, Solve Date: {solvedate}")
+    elif solvedate <= last_day_of_2_months_ago:
+        print(f"Ticket id: {ticket_id}, Solve Date: {solvedate} Added to forgotten list")
+        db_funcs.add_ticket_id(ticket_id)
     else:
         return "Skip"
 
@@ -193,7 +198,8 @@ def get_report_data(session_token, report):
         threads.append(thread)
 
     for ticket_id in range(newest_ticket_id):
-        task_queue.put(ticket_id)
+        if not db_funcs.is_ticket(ticket_id):
+            task_queue.put(ticket_id) 
 
     task_queue.join()
 

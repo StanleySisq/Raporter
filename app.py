@@ -1,7 +1,7 @@
 from flask import Flask, jsonify
 import threading
 from give_away import send_full_data, send_small_data
-import settings
+import settings, db_funcs
 
 app = Flask(__name__)
 
@@ -36,4 +36,5 @@ def full_raport():
     }), 202
 
 if __name__ == "__main__":
+    db_funcs.init_database()
     app.run(host=settings.host, port=settings.port)
