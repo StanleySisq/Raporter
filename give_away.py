@@ -576,8 +576,89 @@ def get_report_data(session_token, report):
 
                 report_data[prepared_ticket.get('firma')] = data_set_out
 
+    thread = threading.Thread(target=evidence, args=(session_token ,all_tickets_to_process, ))
+    thread.daemon = False 
+    thread.start()
+
     return report_data
-   
+
+def evidence(session_token, all_tickets_to_process):
+
+    user1 = 2702
+    user2 = 2703
+    user3 = 2555
+    user1_time = 20*60
+    user2_time = 14*60
+    user3_time = 10*60
+    data = {day: 0 for day in range(1, 32)}
+    user1_data_time = copy.deepcopy(data)
+    user2_data_time = copy.deepcopy(data)
+    user3_data_time = copy.deepcopy(data)
+    user1_data_id = copy.deepcopy(data)
+    user2_data_id = copy.deepcopy(data)
+    user3_data_id = copy.deepcopy(data)
+    user1_data_id_2 = copy.deepcopy(data)
+    user2_data_id_2 = copy.deepcopy(data)
+    user3_data_id_2 = copy.deepcopy(data)
+
+    for ticket_id in all_tickets_to_process:
+
+        def get_details(session_token, ticket_id, user_data_time, user_data_id, user_data_id_2, user_time):
+
+            ticket_detail = get_ticket_details(session_token, ticket_id)
+            time = ticket_detail.get('actiontime')
+            day= datetime.strptime(ticket_detail.get('solvedate'), '%Y-%m-%d %H:%M:%S').day
+
+            if day > 24:
+                return user_data_time, user_data_id, user_data_id_2, user_time
+            
+            if user_time - time < 0:
+                return user_data_time, user_data_id, user_data_id_2, user_time
+
+            if user_data_id[day] == 0:
+                user_data_id[day] = int(ticket_id)
+            elif user_data_id_2[day] == 0:
+                user_data_id_2[day] = int(ticket_id)
+            else:
+                return user_data_time, user_data_id, user_data_id_2, user_time
+                
+            user_time = user_time - time
+
+            user_data_time[day] += float(time)/60
+
+            return user_data_time, user_data_id, user_data_id_2, user_time
+
+        user, technic = get_assigned_users_from_ticket(session_token, ticket_id)
+
+        if technic == user1:
+            user1_data_time, user1_data_id, user1_data_id_2, user1_time = get_details(session_token, ticket_id, user1_data_time, user1_data_id, user1_data_id_2, user1_time)
+            
+        elif technic == user2:
+            user2_data_time, user2_data_id, user2_data_id_2, user2_time = get_details(session_token, ticket_id, user2_data_time, user2_data_id, user2_data_id_2, user2_time)
+
+        elif technic == user3:
+            user3_data_time, user3_data_id, user3_data_id_2, user3_time = get_details(session_token, ticket_id, user3_data_time, user3_data_id, user3_data_id_2, user3_time)
+
+        #upload all data to Power Automate
+    
+    def load_send(user_data_time, user_data_id, user_data_id_2, user):
+        headers = {'Content-Type': 'application/json'}
+        payload = {
+            "user" : user,
+            "time_data": user_data_time,
+            "id_data_1": user_data_id,
+            "id_data_2": user_data_id_2
+        }
+        print(payload)
+
+        response = requests.post(settings.upload_link_report, json=payload, headers=headers)
+        print(f"Raport sent {response.status_code()}")
+        sleep(5)
+
+    load_send(user1_data_time, user1_data_id, user1_data_id_2, user1)
+    load_send(user2_data_time, user2_data_id, user2_data_id_2, user2)
+    load_send(user3_data_time, user3_data_id, user3_data_id_2, user3)
+
 def send_full_data():
 
     #for every company
@@ -599,7 +680,7 @@ def send_full_data():
         
         response = requests.post(settings.upload_link, json=payload, headers=headers)
         #response.raise_for_status()  
-        print("Raport sent")
+        print(f"Raport sent {response.status_code()}")
         sleep(5)
 
 def send_small_data():
