@@ -22,6 +22,8 @@ last_day = 25
 host = '172.17.17.78'
 #port
 port = 5000
+#link do evidenc
+upload_link_report = ""
 
 entities_map = {
                 1: "",

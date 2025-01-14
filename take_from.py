@@ -98,7 +98,7 @@ def get_assigned_users_from_ticket(session_token, ticket_id):
                     requester = user.get('users_id')
                 
                 if str(user_type) == "2" and technician == "None":
-                    if requester == "None" or str(user.get('user_id')) in settings.our_technics:
+                    if requester == "None" or str(user.get('users_id')) in settings.our_technics:
                         technician = user.get('users_id')
 
             #print(technician)

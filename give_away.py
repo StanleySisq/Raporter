@@ -582,6 +582,28 @@ def get_report_data(session_token, report):
 
     return report_data
 
+def get_details_evidence(session_token, ticket_id, user_data_time, user_data_id, user_data_id_2, user_time):
+
+            ticket_detail = get_ticket_details(session_token, ticket_id)
+            time = ticket_detail.get('actiontime')
+            day= datetime.strptime(ticket_detail.get('solvedate'), '%Y-%m-%d %H:%M:%S').day
+
+            if day > 24 or user_time - time < 0:
+                return user_data_time, user_data_id, user_data_id_2, user_time
+            
+            if user_data_id[day] == 0:
+                user_data_id[day] = int(ticket_id)
+            elif user_data_id_2[day] == 0:
+                user_data_id_2[day] = int(ticket_id)
+            else:
+                return user_data_time, user_data_id, user_data_id_2, user_time
+                
+            user_time = user_time - time
+
+            user_data_time[day] += (float(time)/60)
+
+            return user_data_time, user_data_id, user_data_id_2, user_time
+
 def evidence(session_token, all_tickets_to_process):
 
     user1 = 2702
@@ -603,43 +625,18 @@ def evidence(session_token, all_tickets_to_process):
 
     for ticket_id in all_tickets_to_process:
 
-        def get_details(session_token, ticket_id, user_data_time, user_data_id, user_data_id_2, user_time):
-
-            ticket_detail = get_ticket_details(session_token, ticket_id)
-            time = ticket_detail.get('actiontime')
-            day= datetime.strptime(ticket_detail.get('solvedate'), '%Y-%m-%d %H:%M:%S').day
-
-            if day > 24:
-                return user_data_time, user_data_id, user_data_id_2, user_time
-            
-            if user_time - time < 0:
-                return user_data_time, user_data_id, user_data_id_2, user_time
-
-            if user_data_id[day] == 0:
-                user_data_id[day] = int(ticket_id)
-            elif user_data_id_2[day] == 0:
-                user_data_id_2[day] = int(ticket_id)
-            else:
-                return user_data_time, user_data_id, user_data_id_2, user_time
-                
-            user_time = user_time - time
-
-            user_data_time[day] += float(time)/60
-
-            return user_data_time, user_data_id, user_data_id_2, user_time
-
         user, technic = get_assigned_users_from_ticket(session_token, ticket_id)
 
-        if technic == user1:
-            user1_data_time, user1_data_id, user1_data_id_2, user1_time = get_details(session_token, ticket_id, user1_data_time, user1_data_id, user1_data_id_2, user1_time)
+        if str(technic) == str(user1):
+            user1_data_time, user1_data_id, user1_data_id_2, user1_time = get_details_evidence(session_token, ticket_id, user1_data_time, user1_data_id, user1_data_id_2, user1_time)
             
-        elif technic == user2:
-            user2_data_time, user2_data_id, user2_data_id_2, user2_time = get_details(session_token, ticket_id, user2_data_time, user2_data_id, user2_data_id_2, user2_time)
+        elif str(technic) == str(user2):
+            user2_data_time, user2_data_id, user2_data_id_2, user2_time = get_details_evidence(session_token, ticket_id, user2_data_time, user2_data_id, user2_data_id_2, user2_time)
 
-        elif technic == user3:
-            user3_data_time, user3_data_id, user3_data_id_2, user3_time = get_details(session_token, ticket_id, user3_data_time, user3_data_id, user3_data_id_2, user3_time)
+        elif str(technic) == str(user3):
+            user3_data_time, user3_data_id, user3_data_id_2, user3_time = get_details_evidence(session_token, ticket_id, user3_data_time, user3_data_id, user3_data_id_2, user3_time)
 
-        #upload all data to Power Automate
+    #upload all data to Power Automate
     
     def load_send(user_data_time, user_data_id, user_data_id_2, user):
         headers = {'Content-Type': 'application/json'}
@@ -652,7 +649,7 @@ def evidence(session_token, all_tickets_to_process):
         print(payload)
 
         response = requests.post(settings.upload_link_report, json=payload, headers=headers)
-        print(f"Raport sent {response.status_code()}")
+        print("Raport sent ")
         sleep(5)
 
     load_send(user1_data_time, user1_data_id, user1_data_id_2, user1)
@@ -680,7 +677,7 @@ def send_full_data():
         
         response = requests.post(settings.upload_link, json=payload, headers=headers)
         #response.raise_for_status()  
-        print(f"Raport sent {response.status_code()}")
+        print("Full Raport sent")
         sleep(5)
 
 def send_small_data():
