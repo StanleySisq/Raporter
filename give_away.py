@@ -600,7 +600,7 @@ def get_details_evidence(session_token, ticket_id, user_data_time, user_data_id,
                 
             user_time = user_time - time
 
-            user_data_time[day] += (float(time)/60)
+            user_data_time[day] += (float(time)/3600)
 
             return user_data_time, user_data_id, user_data_id_2, user_time
 
@@ -609,9 +609,9 @@ def evidence(session_token, all_tickets_to_process):
     user1 = 2702
     user2 = 2703
     user3 = 2555
-    user1_time = 20*60
-    user2_time = 14*60
-    user3_time = 10*60
+    user1_time = 20*3600
+    user2_time = 14*3600
+    user3_time = 10*3600
     data = {day: 0 for day in range(1, 32)}
     user1_data_time = copy.deepcopy(data)
     user2_data_time = copy.deepcopy(data)
