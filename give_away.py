@@ -83,7 +83,7 @@ def get_report_data(session_token, report):
     newest_ticket_id = newest_ticket(session_token)
 
     all_tickets_to_process = []
-    # FILL DATA
+    # FILL DATA WITH COMPANY FULL NAMES
     time_sum_helpdesk = {
                 "":0,
                 "":0,
@@ -148,7 +148,7 @@ def get_report_data(session_token, report):
         "KosztAdminiWlasneDodatek": 0,
         "KosztAdminiKorpoDodatek": 0
     }
-    # FILL DATA
+    # FILL DATA WITH SAME COMPANY FULL NAMES
     report_data = {
         "": copy.deepcopy(data_set),
         "": copy.deepcopy(data_set),

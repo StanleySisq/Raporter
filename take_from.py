@@ -113,7 +113,8 @@ def get_assigned_users_from_ticket(session_token, ticket_id):
 
 def get_customs(session_token, ticket_id):
 
-    endpoint = f"{settings.glpi_url}/{settings.resource}?criteria[0][field]=items_id&criteria[0][searchtype]=equals&criteria[0][value]={ticket_id}"
+    #endpoint = f"{settings.glpi_url}/{settings.resource}?criteria[0][field]=items_id&criteria[0][searchtype]=equals&criteria[0][value]={ticket_id}"
+    endpoint = f"{settings.glpi_Url}/{settings.resource}?sort=id&order=DESC&range=0-1000"
     # !!!!!!!!!!!!!!!!!!!!!!!!! fix like in glpi api conect
 
     response = requests.get(endpoint, headers=header(session_token))
@@ -121,7 +122,7 @@ def get_customs(session_token, ticket_id):
     wydatek = "None"
     dodatek = "None"
 
-    if response.status_code == 200:
+    if response.status_code == 200 or response.status_code == 206:
         datas = response.json()
         if datas:
             for data in datas:
