@@ -300,7 +300,7 @@ def get_report_data(session_token, report):
 
                         data_set_out["SumHelpdeskKorpoDodatek"] = sum
 
-                        data_set_out["KosztHelpdeskKorpoDodatek"] = sum/60*entitlements.get(prepared_ticket.get('firma')).  get('StawkaHelpdeskDod')
+                        data_set_out["KosztHelpdeskKorpoDodatek"] = sum/60*entitlements.get(prepared_ticket.get('firma')).get('StawkaHelpdeskDod')
 
                         listID = data_set_out.get('ListIDHelpdeskDodatek') 
                         listID = listID  + ' ' + str(prepared_ticket.get('id'))+','
@@ -322,7 +322,7 @@ def get_report_data(session_token, report):
                         korpo_set["numer"] = prepared_ticket.get('id')
                         korpo_set["tytul"] = prepared_ticket.get('tytul')
                         korpo_set["Koszt"] = str(prepared_ticket.get('time_spend')/60*entitlements.get(prepared_ticket.get('firma')).get("StawkaHelpdeskDod"))
-                        korpo_set["KosztBruto"] = int(korpo_set.get("KosztyNetto"))*1.23
+                        korpo_set["KosztBruto"] = int(korpo_set.get("Koszt"))*1.23
 
                         data_set_out["KosztyKorpo"].append(korpo_set)
 
@@ -414,7 +414,7 @@ def get_report_data(session_token, report):
                         korpo_set["numer"] = prepared_ticket.get('id')
                         korpo_set["tytul"] = prepared_ticket.get('tytul')
                         korpo_set["Koszt"] = str(prepared_ticket.get('time_spend')/60*entitlements.get(prepared_ticket.get('firma')).get("StawkaAdminiDod"))
-                        korpo_set["KosztBruto"] = int(korpo_set.get("KosztyNetto"))*1.23
+                        korpo_set["KosztBruto"] = int(korpo_set.get("Koszt"))*1.23
 
                         data_set_out["KosztyKorpo"].append(korpo_set)
 
@@ -500,7 +500,7 @@ def get_report_data(session_token, report):
                 korpo_set["numer"] = prepared_ticket.get('id')
                 korpo_set["tytul"] = prepared_ticket.get('tytul')
                 korpo_set["Koszt"] = str(prepared_ticket.get('time_spend')/60*entitlements.get(prepared_ticket.get('firma')).get("StawkaPakiet"))
-                korpo_set["KosztBruto"] = int(korpo_set.get("KosztyNetto"))*1.23
+                korpo_set["KosztBruto"] = int(korpo_set.get("Koszt"))*1.23
 
                 data_set_out["KosztyKorpo"].append(korpo_set)
 
@@ -570,7 +570,7 @@ def get_report_data(session_token, report):
                 korpo_set["numer"] = prepared_ticket.get('id')
                 korpo_set["tytul"] = prepared_ticket.get('tytul')
                 korpo_set["Koszt"] = str(prepared_ticket.get('time_spend')/60*entitlements.get(prepared_ticket.get('firma')).get("StawkaPakiet"))
-                korpo_set["KosztBruto"] = int(korpo_set.get("KosztyNetto"))*1.23
+                korpo_set["KosztBruto"] = int(korpo_set.get("Koszt"))*1.23
 
                 data_set_out["KosztyKorpo"].append(korpo_set)
 
