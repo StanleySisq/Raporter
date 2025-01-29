@@ -63,11 +63,20 @@ def get_prepered_ticket(session_token, ticket_id):
 
     entities_map = settings.entities_map
 
+
+    gido = user_details.get('name')
+
+    try:
+        if gido.endswith('-NN'):
+            gido = gido[0:6]
+    except Exception as e:
+        print('Error cuting GID')
+
     merged_details = {
         'id': ticket_details.get('id'),
         'firma': str(entities_map.get(ticket_details.get('entities_id'))),
         'tytul': ticket_details.get('name'),
-        'gid': user_details.get('name'),
+        'gid': gido,
         'solve_date': ticket_details.get('solvedate'),
         'time_spend': (int(ticket_details.get('actiontime'))/60),
         'uprawnienie': uprawnienie,
@@ -267,7 +276,7 @@ def get_report_data(session_token, report):
 
                         records_set_h["NumerSprawyH"] = prepared_ticket.get('id')
                         records_set_h["TytulSprawyH"] = prepared_ticket.get('tytul')
-                        records_set_h["KosztyH"] = str(prepared_ticket.get('time_spend')/60*entitlements.get(prepared_ticket.get('firma')).get("StawkaHelpdeskDod")) 
+                        records_set_h["KosztyH"] = prepared_ticket.get('wydatek') 
                         records_set_h["GIDH"] = prepared_ticket.get('gid')
                         hours = math.floor(prepared_ticket.get('time_spend')/60)
                         if prepared_ticket.get('time_spend')-(hours*60)>0:
@@ -308,7 +317,7 @@ def get_report_data(session_token, report):
 
                         records_set_h["NumerSprawyH"] = prepared_ticket.get('id')
                         records_set_h["TytulSprawyH"] = prepared_ticket.get('tytul')
-                        records_set_h["KosztyH"] = str(prepared_ticket.get('time_spend')/60*entitlements.get(prepared_ticket.get('firma')).get("StawkaHelpdeskDod"))
+                        records_set_h["KosztyH"] = prepared_ticket.get('wydatek')
                         records_set_h["GIDH"] = prepared_ticket.get('gid')
                         hours = math.floor(prepared_ticket.get('time_spend')/60)
                         if prepared_ticket.get('time_spend')-(hours*60)>0:
@@ -322,9 +331,9 @@ def get_report_data(session_token, report):
                         korpo_set["numer"] = prepared_ticket.get('id')
                         korpo_set["tytul"] = prepared_ticket.get('tytul')
                         korpo_set["Koszt"] = str(prepared_ticket.get('time_spend')/60*entitlements.get(prepared_ticket.get('firma')).get("StawkaHelpdeskDod"))
-                        korpo_set["KosztBruto"] = int(korpo_set.get("Koszt"))*1.23
+                        korpo_set["KosztBruto"] = str(prepared_ticket.get('time_spend')/60*entitlements.get(prepared_ticket.get('firma')).get("StawkaHelpdeskDod")*1.23)
 
-                        data_set_out["KosztyKorpo"].append(korpo_set)
+                        data_set_out["KosztyKorpo"].append(copy.deepcopy(korpo_set))
 
                         report_data[prepared_ticket.get('firma')] = data_set_out
 
@@ -358,7 +367,7 @@ def get_report_data(session_token, report):
 
                         records_set_a["NumerSprawyA"] = prepared_ticket.get('id')
                         records_set_a["TytulSprawyA"] = prepared_ticket.get('tytul')
-                        records_set_a["KosztyA"] = str(prepared_ticket.get('time_spend')/60*entitlements.get(prepared_ticket.get('firma')).get("StawkaAdminiDod"))
+                        records_set_a["KosztyA"] = prepared_ticket.get('wydatek')
                         records_set_a["GIDA"] = prepared_ticket.get('gid')
                         hours = math.floor(prepared_ticket.get('time_spend')/60)
                         if prepared_ticket.get('time_spend')-(hours*60)>0:
@@ -400,7 +409,7 @@ def get_report_data(session_token, report):
 
                         records_set_a["NumerSprawyA"] = prepared_ticket.get('id')
                         records_set_a["TytulSprawyA"] = prepared_ticket.get('tytul')
-                        records_set_a["KosztyA"] = str(prepared_ticket.get('time_spend')/60*entitlements.get(prepared_ticket.get('firma')).get("StawkaAdminiDod"))
+                        records_set_a["KosztyA"] = prepared_ticket.get('wydatek')
                         records_set_a["GIDA"] = prepared_ticket.get('gid')
                         hours = math.floor(prepared_ticket.get('time_spend')/60)
                         if prepared_ticket.get('time_spend')-(hours*60)>0:
@@ -414,9 +423,9 @@ def get_report_data(session_token, report):
                         korpo_set["numer"] = prepared_ticket.get('id')
                         korpo_set["tytul"] = prepared_ticket.get('tytul')
                         korpo_set["Koszt"] = str(prepared_ticket.get('time_spend')/60*entitlements.get(prepared_ticket.get('firma')).get("StawkaAdminiDod"))
-                        korpo_set["KosztBruto"] = int(korpo_set.get("Koszt"))*1.23
+                        korpo_set["KosztBruto"] = str(prepared_ticket.get('time_spend')/60*entitlements.get(prepared_ticket.get('firma')).get("StawkaAdminiDod")*1.23)
 
-                        data_set_out["KosztyKorpo"].append(korpo_set)
+                        data_set_out["KosztyKorpo"].append(copy.deepcopy(korpo_set))
 
                         report_data[prepared_ticket.get('firma')] = data_set_out
             else:
@@ -442,11 +451,11 @@ def get_report_data(session_token, report):
 
                 data_set_out = report_data.get(prepared_ticket.get('firma'))
 
-                list_dodatek = data_set_out.get('ListIDHelpdeskDodatek') 
+                list_dodatek = data_set_out.get('ListIDHelpdeskDodatek')
                 if str(" "+str(prepared_ticket.get('id'))+",") in list_dodatek:
                     continue
 
-                sum = data_set_out.get("SumHelpdeskWlasnePakiet") 
+                sum = data_set_out.get("SumHelpdeskWlasnePakiet")
 
                 sum = sum + int(prepared_ticket.get('time_spend'))
 
@@ -455,7 +464,7 @@ def get_report_data(session_token, report):
 
                 records_set_h["NumerSprawyH"] = prepared_ticket.get('id')
                 records_set_h["TytulSprawyH"] = prepared_ticket.get('tytul')
-                records_set_h["KosztyH"] = str(prepared_ticket.get('time_spend')/60*entitlements.get(prepared_ticket.get('firma')).get("StawkaPakiet"))
+                records_set_h["KosztyH"] = prepared_ticket.get('wydatek')
                 records_set_h["GIDH"] = prepared_ticket.get('gid')
                 hours = math.floor(prepared_ticket.get('time_spend')/60)
                 if prepared_ticket.get('time_spend')-(hours*60)>0:
@@ -486,7 +495,7 @@ def get_report_data(session_token, report):
 
                 records_set_h["NumerSprawyH"] = prepared_ticket.get('id')
                 records_set_h["TytulSprawyH"] = prepared_ticket.get('tytul')
-                records_set_h["KosztyH"] = str(prepared_ticket.get('time_spend')/60*entitlements.get(prepared_ticket.get('firma')).get("StawkaPakiet"))
+                records_set_h["KosztyH"] = prepared_ticket.get('wydatek')
                 records_set_h["GIDH"] = prepared_ticket.get('gid')
                 hours = math.floor(prepared_ticket.get('time_spend')/60)
                 if prepared_ticket.get('time_spend')-(hours*60)>0:
@@ -500,9 +509,9 @@ def get_report_data(session_token, report):
                 korpo_set["numer"] = prepared_ticket.get('id')
                 korpo_set["tytul"] = prepared_ticket.get('tytul')
                 korpo_set["Koszt"] = str(prepared_ticket.get('time_spend')/60*entitlements.get(prepared_ticket.get('firma')).get("StawkaPakiet"))
-                korpo_set["KosztBruto"] = int(korpo_set.get("Koszt"))*1.23
+                korpo_set["KosztBruto"] = str(prepared_ticket.get('time_spend')/60*entitlements.get(prepared_ticket.get('firma')).get("StawkaPakiet")*1.23)
 
-                data_set_out["KosztyKorpo"].append(korpo_set)
+                data_set_out["KosztyKorpo"].append(copy.deepcopy(korpo_set))
 
                 report_data[prepared_ticket.get('firma')] = data_set_out
 
@@ -525,7 +534,7 @@ def get_report_data(session_token, report):
 
                 records_set_a["NumerSprawyA"] = prepared_ticket.get('id')
                 records_set_a["TytulSprawyA"] = prepared_ticket.get('tytul')
-                records_set_a["KosztyA"] = str(prepared_ticket.get('time_spend')/60*entitlements.get(prepared_ticket.get('firma')).get("StawkaPakiet"))
+                records_set_a["KosztyA"] = prepared_ticket.get('wydatek')
                 records_set_a["GIDA"] = prepared_ticket.get('gid')
                 hours = math.floor(prepared_ticket.get('time_spend')/60)
                 if prepared_ticket.get('time_spend')-(hours*60)>0:
@@ -556,7 +565,7 @@ def get_report_data(session_token, report):
 
                 records_set_a["NumerSprawyA"] = prepared_ticket.get('id')
                 records_set_a["TytulSprawyA"] = prepared_ticket.get('tytul')
-                records_set_a["KosztyA"] = str(prepared_ticket.get('time_spend')/60*entitlements.get(prepared_ticket.get('firma')).get("StawkaPakiet")) 
+                records_set_a["KosztyA"] = prepared_ticket.get('wydatek') 
                 records_set_a["GIDA"] = prepared_ticket.get('gid')
                 hours = math.floor(prepared_ticket.get('time_spend')/60)
                 if prepared_ticket.get('time_spend')-(hours*60)>0:
@@ -570,9 +579,9 @@ def get_report_data(session_token, report):
                 korpo_set["numer"] = prepared_ticket.get('id')
                 korpo_set["tytul"] = prepared_ticket.get('tytul')
                 korpo_set["Koszt"] = str(prepared_ticket.get('time_spend')/60*entitlements.get(prepared_ticket.get('firma')).get("StawkaPakiet"))
-                korpo_set["KosztBruto"] = int(korpo_set.get("Koszt"))*1.23
+                korpo_set["KosztBruto"] = str(prepared_ticket.get('time_spend')/60*entitlements.get(prepared_ticket.get('firma')).get("StawkaPakiet")*1.23)
 
-                data_set_out["KosztyKorpo"].append(korpo_set)
+                data_set_out["KosztyKorpo"].append(copy.deepcopy(korpo_set))
 
                 report_data[prepared_ticket.get('firma')] = data_set_out
 

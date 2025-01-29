@@ -96,10 +96,10 @@ def get_assigned_users_from_ticket(session_token, ticket_id):
 
                 if str(user_type) == "1":
                     requester = user.get('users_id')
-                
-                if str(user_type) == "2" and technician == "None":
-                    if requester == "None" or str(user.get('users_id')) in settings.our_technics:
-                        technician = user.get('users_id')
+
+                if str(user_type) == "2":
+                    if str(user.get('users_id')) in settings.our_technics or str(technician) == "None":
+                        technician = user.get('users_id') 
 
             #print(technician)
             #print(requester)
@@ -115,7 +115,6 @@ def get_customs(session_token, ticket_id):
 
     #endpoint = f"{settings.glpi_url}/{settings.resource}?criteria[0][field]=items_id&criteria[0][searchtype]=equals&criteria[0][value]={ticket_id}"
     endpoint = f"{settings.glpi_url}/{settings.resource}?sort=id&order=DESC&range=0-1000"
-    # !!!!!!!!!!!!!!!!!!!!!!!!! fix like in glpi api conect
 
     response = requests.get(endpoint, headers=header(session_token))
     uprawnienie = "None"

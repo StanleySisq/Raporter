@@ -33,8 +33,15 @@ def get_group_users(session_token, group_id):
 def put_group_user(session_token, group_id, user_id):
 
     payload = {
+        "input": [
+            {
         "groups_id": group_id,
-        "users_id": user_id
+        "users_id": user_id,
+        "is_dynamic": 0,
+        "is_manager": 0,
+        "is_userdelegate": 0
+            }
+        ]
     }
 
     response = requests.post(
