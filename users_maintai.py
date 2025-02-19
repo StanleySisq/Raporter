@@ -88,5 +88,8 @@ def put_new_user_in_groups():
         details = get_user_details(session_token, user_id)
         
         for inis in inside:
-            if inis in details.get('user_dn'):
-                put_group_user(session_token, inside_id.get(inis), user_id)
+            try:
+                if inis in details.get('user_dn'):
+                    put_group_user(session_token, inside_id.get(inis), user_id)
+            except Exception as e:
+                print(e)

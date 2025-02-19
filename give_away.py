@@ -674,20 +674,27 @@ def send_full_data():
 
 
     for company, data_set in data.items():
-        print("-" * 40)
+        for i in range(10):
+            try:
+                print("-" * 40)
 
-        payload = {
-            "company" : company,
-            "data": data_set
-        }
-        headers = {'Content-Type': 'application/json'}
+                payload = {
+                    "company" : company,
+                    "data": data_set
+                }
+                headers = {'Content-Type': 'application/json'}
 
-        print(payload)
-        
-        response = requests.post(settings.upload_link, json=payload, headers=headers)
-        #response.raise_for_status()  
-        print("Full Raport sent")
-        sleep(5)
+                print(payload)
+                
+                response = requests.post(settings.upload_link, json=payload, headers=headers)
+                #response.raise_for_status()  
+                print("Full Raport sent")
+                sleep(10)
+            except Exception as e:
+                print(f'Error sending full data: {e}')
+                continue
+            else:
+                break
 
 def send_small_data():
 
@@ -697,19 +704,26 @@ def send_small_data():
     time_sum_helpdesk, time_sum_admini = get_report_data(session_token, False)
 
     for company, timeH in time_sum_helpdesk.items():
-        print("-" * 40)
-        timeA = time_sum_admini.get(company)
+        for i in range(10):
+            try:
+                print("-" * 40)
+                timeA = time_sum_admini.get(company)
 
-        payload = {
-            "company" : company,
-            "helpdesk": timeH,
-            "admini": timeA
-        }
-        headers = {'Content-Type': 'application/json'}
+                payload = {
+                    "company" : company,
+                    "helpdesk": timeH,
+                    "admini": timeA
+                }
+                headers = {'Content-Type': 'application/json'}
 
-        print(payload)
-        
-        response = requests.post(settings.little_upload_link, json=payload, headers=headers)
-        #response.raise_for_status()  
-        print("mini Raport sent")
-        sleep(2)
+                print(payload)
+                
+                response = requests.post(settings.little_upload_link, json=payload, headers=headers)
+                #response.raise_for_status()  
+                print("mini Raport sent")
+                sleep(4)
+            except Exception as e:
+                print(f'Error sending full data: {e}')
+                continue
+            else:
+                break
