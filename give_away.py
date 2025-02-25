@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from take_from import get_assigned_users_from_ticket, get_customs, get_ticket_details, get_user_details, newest_ticket, init_session
 import settings    
 
-def get_prepered_ticket(session_token, ticket_id):
+def get_prepered_ticket(session_token, ticket_id, report):
 
     ticket_details = get_ticket_details(session_token, ticket_id)
     
@@ -22,10 +22,22 @@ def get_prepered_ticket(session_token, ticket_id):
     if solvedate_str == None:
         return "Skip"
     
+    
     now = datetime.now()
-    current_month_25th = now.replace(day=settings.last_day)
-    last_day_of_previous_month = now.replace(day=1) - timedelta(days=1)
-    previous_month_25th = last_day_of_previous_month.replace(day=settings.first_day)
+
+    if not report:
+        nowday = now.strftime("%d")
+        if int(nowday) > 24:
+            current_month_25th = now + timedelta(days=1)
+            previous_month_25th = now.replace(day=settings.first_day)
+        else:
+            current_month_25th = now.replace(day=settings.last_day)
+            last_day_of_previous_month = now.replace(day=1) - timedelta(days=1)
+            previous_month_25th = last_day_of_previous_month.replace(day=settings.first_day)
+    else:
+        current_month_25th = now.replace(day=settings.last_day)
+        last_day_of_previous_month = now.replace(day=1) - timedelta(days=1)
+        previous_month_25th = last_day_of_previous_month.replace(day=settings.first_day)
 
     if solvedate_str:
         solvedate = datetime.strptime(solvedate_str, "%Y-%m-%d %H:%M:%S")
@@ -34,7 +46,7 @@ def get_prepered_ticket(session_token, ticket_id):
 
     if solvedate and previous_month_25th <= solvedate < current_month_25th:
         print(f"Ticket id: {ticket_id}, Solve Date: {solvedate}")
-    elif solvedate and solvedate < previous_month_25th:
+    elif solvedate and report and solvedate < previous_month_25th:
         print(f"Ticket id: {ticket_id}, Solve Date: {solvedate} Added to forgotten list")
         db_funcs.add_ticket_id(ticket_id)
         return "Skip"
@@ -169,9 +181,9 @@ def get_report_data(session_token, report):
     }    
     lock = threading.Lock()
     def inside(ticket_id):
-        nonlocal time_sum_helpdesk, time_sum_admini, all_tickets_to_process
+        nonlocal time_sum_helpdesk, time_sum_admini, all_tickets_to_process, report
         try:
-            prepared_ticket = get_prepered_ticket(session_token, ticket_id)
+            prepared_ticket = get_prepered_ticket(session_token, ticket_id, report)
         except Exception as e:
             return
 
@@ -235,7 +247,7 @@ def get_report_data(session_token, report):
 
         for ticket_id in all_tickets_to_process:
             try:
-                prepared_ticket = get_prepered_ticket(session_token, ticket_id)
+                prepared_ticket = get_prepered_ticket(session_token, ticket_id, True)
             except Exception as e:
                 continue
             
@@ -436,7 +448,7 @@ def get_report_data(session_token, report):
 
     for ticket_id in all_tickets_to_process:
         try:
-            prepared_ticket = get_prepered_ticket(session_token, ticket_id)
+            prepared_ticket = get_prepered_ticket(session_token, ticket_id, True)
         except Exception as e:
             continue
         
