@@ -18,6 +18,9 @@ def get_prepered_ticket(session_token, ticket_id, report):
     if ticket_details.get('status') not in [5,6]:
         return "Skip"
     
+    if ticket_details.get('status') == 5:
+        print("change to closed")
+    
     solvedate_str = ticket_details.get('solvedate')
     if solvedate_str == None:
         return "Skip"
@@ -84,9 +87,23 @@ def get_prepered_ticket(session_token, ticket_id, report):
     except Exception as e:
         print('Error cuting GID')
 
+    if ticket_details.get('entities_id') == 0:
+        if user_details.get('entities_id') != 0:
+            entity_id = user_details.get('entities_id')
+        else:
+            entity_id = 1
+    else:
+        entity_id = ticket_details.get('entities_id')
+
+    
+    if int(ticket_details.get('id')) <= 9999:
+        idek = "#HLP000"+str(ticket_details.get('id'))
+    else:
+        idek = "#HLP00"+str(ticket_details.get('id'))
+
     merged_details = {
-        'id': ticket_details.get('id'),
-        'firma': str(entities_map.get(ticket_details.get('entities_id'))),
+        'id': idek,
+        'firma': str(entities_map.get(entity_id)),
         'tytul': ticket_details.get('name'),
         'gid': gido,
         'solve_date': ticket_details.get('solvedate'),
@@ -255,6 +272,14 @@ def get_report_data(session_token, report):
                 continue
 
             if prepared_ticket.get('dodatek') == "Tak" and x == 1:
+                continue
+
+            breaker = False
+            for forbiden in settings.forbiden_list:
+                if forbiden in prepared_ticket.get('tytul'):
+                    breaker = True
+
+            if breaker:
                 continue
 
             if prepared_ticket.get('dodatek') == "Tak" or x == 1:                

@@ -149,3 +149,24 @@ def get_customs(session_token, ticket_id):
     else: dodatek = "None"
     
     return uprawnienie, wydatek, dodatek
+
+def glpi_close_ticket(session_token, ticket_id):
+
+    data = {
+        "input": {
+            "status": 6
+        }
+    }
+
+    response = requests.put(
+        f"{settings.glpi_url}/Ticket/{ticket_id}", 
+        headers=header(session_token), 
+        json=data
+    )
+
+    if response.status_code == 200:
+        print(f"Ticket {ticket_id} was closed succesfully.")
+        return response.json()
+    else:
+        print(f"Error closing ticket {ticket_id}: {response.status_code} - {response.text}")
+        response.raise_for_status()
