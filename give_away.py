@@ -5,7 +5,7 @@ import threading
 from time import sleep
 import requests
 from datetime import datetime, timedelta
-from take_from import get_assigned_users_from_ticket, get_customs, get_ticket_details, get_user_details, newest_ticket, init_session
+from take_from import get_assigned_users_from_ticket, get_customs, get_ticket_details, get_user_details, glpi_close_ticket, newest_ticket, init_session
 import settings    
 
 def get_prepered_ticket(session_token, ticket_id, report):
@@ -19,7 +19,10 @@ def get_prepered_ticket(session_token, ticket_id, report):
         return "Skip"
     
     if ticket_details.get('status') == 5:
-        print("change to closed")
+        try:
+            glpi_close_ticket(session_token, ticket_id)
+        except Exception as e:
+            print(f"Error closing: {e}")
     
     solvedate_str = ticket_details.get('solvedate')
     if solvedate_str == None:
@@ -97,9 +100,9 @@ def get_prepered_ticket(session_token, ticket_id, report):
 
     
     if int(ticket_details.get('id')) <= 9999:
-        idek = "#HLP000"+str(ticket_details.get('id'))
+        idek = "HLP#000"+str(ticket_details.get('id'))
     else:
-        idek = "#HLP00"+str(ticket_details.get('id'))
+        idek = "HLP#00"+str(ticket_details.get('id'))
 
     merged_details = {
         'id': idek,
